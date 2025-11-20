@@ -61,3 +61,21 @@ def cadastro_funcionario():
         print("Cadastrado com sucesso!")
     else:
         print("Senha incorreta")
+
+def login():
+    usuario = input("Usuário: ")
+    senha = input("Senha: ")
+
+    try:
+        with open("funcionario.txt", "r") as arq:
+            for linha in arq:
+                nome, user, email, senha_salva = linha.strip().split(";")
+                if usuario == user and senha == senha_salva:
+                    print("Login realizado com sucesso!")
+                    return True
+    except FileNotFoundError:
+        print("Nenhum funcionário cadastrado ainda.")
+        return False
+
+    print("Usuário ou senha incorretos.")
+    return False
