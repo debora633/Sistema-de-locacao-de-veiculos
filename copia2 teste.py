@@ -2,15 +2,50 @@ import customtkinter as ctk
 
 
 
-def usuario_existente(usuario_procurado):  #verifica se tem algum usuario no banco igual ao digitado
-    usuario_encontrado=False
-    with open("funcionario.txt", "r") as arq:
-        for linha in arq:
-            usuario= linha.strip().split(";")
-            if usuario[1]==usuario_procurado:
-                usuario_encontrado=True
-                break
-    return usuario_encontrado
+def usuario_existente(usuario_procurado):
+    try:
+        with open("funcionario.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                nome, user, email, senha = linha.strip().split(";")
+                if user == usuario_procurado:
+                    return True
+    except FileNotFoundError:
+        return False  
+    return False
+
+
+def salvar_cadastro_txt(nome, usuario, email, senha, confirmar):
+    if usuario_existente(usuario):
+        return "Usuário já existente! Escolha outro."
+
+    if ("@" not in email) or (".com" not in email and ".br" not in email):
+        return "Email inválido."
+
+    if senha != confirmar:
+        return "As senhas não coincidem."
+
+    try:
+        with open("funcionario.txt", "a", encoding="utf-8") as arq:
+            arq.write(f"{nome};{usuario};{email};{senha}\n")
+        return "Cadastrado com sucesso!"
+    except:
+        return "Erro ao salvar no banco de dados."
+
+
+def validar_login(usuario_digitado, senha_digitada):
+    try:
+        with open("funcionario.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                nome, usuario, email, senha = linha.strip().split(";")
+
+                if usuario_digitado == usuario and senha_digitada == senha:
+                    return "Login realizado com sucesso!"
+    except FileNotFoundError:
+        return "Nenhum funcionário cadastrado ainda."
+
+    return "Usuário ou senha incorretos."
+
+
 
 
 def cadastro_funcionario():
@@ -24,7 +59,7 @@ def cadastro_funcionario():
         print("Usuário já existente! Escolha outro")
         return
 
-    if ("@" not in email) or (".com" not in email and ".br" not in email):  #verificação de email válido
+    if ("@" not in email) or (".com" not in email and ".br" not in email): 
         print("Email invalido")
         return
 
@@ -35,23 +70,7 @@ def cadastro_funcionario():
     else:
         print("Senha incorreta")
 
-def validar_login():
-    usuario = campo_usuario.get()
-    senha = campo_senha.get()
 
-    try:
-        with open("funcionario.txt", "r") as arq:
-            for linha in arq:
-                nome, user, email, senha_salva = linha.strip().split(";")
-                if usuario == user and senha == senha_salva:
-                    resultado_login.configure(text="Login realizado com sucesso!", text_color="green")
-                    return True
-    except FileNotFoundError:
-        print("Nenhum funcionário cadastrado ainda.")
-        return False
-
-    resultado_login.configure(text="Usuário ou Senha incorreto", text_color="red")
-    return False
 
 
 #Janela Principal
@@ -91,11 +110,9 @@ def tela_cadastro():
     cadastro.geometry("900x600")
     cadastro.resizable(False, False)
 
-    
     titulo = ctk.CTkLabel(cadastro, text="Cadastro de Funcionário", font=("Arial", 20, "bold"))
     titulo.pack(pady=20)
 
-    
     entry_nome = ctk.CTkEntry(cadastro, placeholder_text="Nome completo", width=300)
     entry_nome.pack(pady=10)
 
@@ -114,8 +131,32 @@ def tela_cadastro():
     status = ctk.CTkLabel(cadastro, text="", text_color="red")
     status.pack(pady=10)
 
-botao_cadastro = ctk.CTkButton(sistema, text="Cadastrar funcionário", command=tela_cadastro)
-botao_cadastro.pack(pady=10)
+    
+    def clicar_cadastrar():
+        nome = entry_nome.get()
+        usuario = entry_usuario.get()
+        email = entry_email.get()
+        senha = entry_senha.get()
+        confirmar = entry_confirmar.get()
+
+        resultado = salvar_cadastro_txt(nome, usuario, email, senha, confirmar)
+
+
+        if resultado == "Cadastrado com sucesso!":
+            status.configure(text=resultado, text_color="green")
+        else:
+            status.configure(text=resultado, text_color="red")
+
+    # BOTÃO DENTRO DA TELA DE CADASTRO
+    botao_cadastrar_usuario = ctk.CTkButton(
+        cadastro,
+        text="Cadastrar Usuário",
+        command=clicar_cadastrar
+    )
+    botao_cadastrar_usuario.pack(pady=20)
+
+botao_abrir_cadastro = ctk.CTkButton(sistema, text="Cadastrar funcionário", command=tela_cadastro) 
+botao_abrir_cadastro.pack(pady=10)
 
 
 sistema.mainloop()
