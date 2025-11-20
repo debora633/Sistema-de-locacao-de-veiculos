@@ -35,26 +35,26 @@ def cadastro_funcionario():
     else:
         print("Senha incorreta")
 
-def login():
-    usuario = input("Usuário: ")
-    senha = input("Senha: ")
+def validar_login():
+    usuario = campo_usuario.get()
+    senha = campo_senha.get()
 
     try:
         with open("funcionario.txt", "r") as arq:
             for linha in arq:
                 nome, user, email, senha_salva = linha.strip().split(";")
                 if usuario == user and senha == senha_salva:
-                    print("Login realizado com sucesso!")
+                    resultado_login.configure(text="Login realizado com sucesso!", text_color="green")
                     return True
     except FileNotFoundError:
         print("Nenhum funcionário cadastrado ainda.")
         return False
 
-    print("Usuário ou senha incorretos.")
+    resultado_login.configure(text="Usuário ou Senha incorreto", text_color="red")
     return False
 
 
-#Janela
+#Janela Principal
 ctk.set_appearance_mode("dark")
 sistema=ctk.CTk()
 sistema.title("Locação de veículos")
@@ -64,7 +64,7 @@ sistema.resizable(False, False)
 label_titulo= ctk.CTkLabel(sistema, text="Locadora de Veículos", font=("Arial", 30, "bold"))
 label_titulo.pack(pady=20)
 
-
+#Tela de Login
 label_usuario= ctk.CTkLabel(sistema, text="Usuário")
 label_usuario.pack(pady=10)
 
@@ -74,11 +74,14 @@ campo_usuario.pack(pady=5)
 label_senha= ctk.CTkLabel(sistema, text="Senha")
 label_senha.pack()
 
-campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite sua senha")
-campo_usuario.pack()
+campo_senha=ctk.CTkEntry(sistema, placeholder_text="Digite sua senha", show="*")
+campo_senha.pack()
 
-botao=ctk.CTkButton(sistema,text="Login")
+botao=ctk.CTkButton(sistema,text="Login", command=validar_login)
 botao.pack(pady=10)
+
+resultado_login=ctk.CTkLabel(sistema, text="")
+resultado_login.pack(pady=10)
 
 #TELA DE CADASTROOOOO
 
