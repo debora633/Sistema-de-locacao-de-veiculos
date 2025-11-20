@@ -1,33 +1,6 @@
 import customtkinter as ctk
 
-#Janela
-ctk.set_appearance_mode("dark")
-sistema=ctk.CTk()
-sistema.title("Locação de veículos")
-sistema.geometry("900x600")
-sistema.resizable(False, False)
 
-label_titulo= ctk.CTkLabel(sistema, text="Locadora de Veículos", font=("Arial", 30, "bold"))
-label_titulo.pack(pady=20)
-
-#Label
-label_usuario= ctk.CTkLabel(sistema, text="Usuário")
-label_usuario.pack(pady=10)
-#Entry
-campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite seu usuário")
-campo_usuario.pack(pady=5)
-#Label
-label_senha= ctk.CTkLabel(sistema, text="Senha")
-label_senha.pack()
-#Entry
-campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite sua senha")
-campo_usuario.pack()
-#Button
-botao=ctk.CTkButton(sistema,text="Login")
-botao.pack(pady=10)
-
-
-sistema.mainloop()
 
 def usuario_existente(usuario_procurado):  #verifica se tem algum usuario no banco igual ao digitado
     usuario_encontrado=False
@@ -79,3 +52,67 @@ def login():
 
     print("Usuário ou senha incorretos.")
     return False
+
+
+#Janela
+ctk.set_appearance_mode("dark")
+sistema=ctk.CTk()
+sistema.title("Locação de veículos")
+sistema.geometry("900x600")
+sistema.resizable(False, False)
+
+label_titulo= ctk.CTkLabel(sistema, text="Locadora de Veículos", font=("Arial", 30, "bold"))
+label_titulo.pack(pady=20)
+
+
+label_usuario= ctk.CTkLabel(sistema, text="Usuário")
+label_usuario.pack(pady=10)
+
+campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite seu usuário")
+campo_usuario.pack(pady=5)
+
+label_senha= ctk.CTkLabel(sistema, text="Senha")
+label_senha.pack()
+
+campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite sua senha")
+campo_usuario.pack()
+
+botao=ctk.CTkButton(sistema,text="Login")
+botao.pack(pady=10)
+
+#TELA DE CADASTROOOOO
+
+def tela_cadastro():
+    cadastro = ctk.CTkToplevel()
+    cadastro.title("Cadastro de Funcionário")
+    cadastro.geometry("900x600")
+    cadastro.resizable(False, False)
+
+    
+    titulo = ctk.CTkLabel(cadastro, text="Cadastro de Funcionário", font=("Arial", 20, "bold"))
+    titulo.pack(pady=20)
+
+    
+    entry_nome = ctk.CTkEntry(cadastro, placeholder_text="Nome completo", width=300)
+    entry_nome.pack(pady=10)
+
+    entry_usuario = ctk.CTkEntry(cadastro, placeholder_text="Usuário", width=300)
+    entry_usuario.pack(pady=10)
+
+    entry_email = ctk.CTkEntry(cadastro, placeholder_text="Email", width=300)
+    entry_email.pack(pady=10)
+
+    entry_senha = ctk.CTkEntry(cadastro, placeholder_text="Senha", show="*", width=300)
+    entry_senha.pack(pady=10)
+
+    entry_confirmar = ctk.CTkEntry(cadastro, placeholder_text="Confirmar senha", show="*", width=300)
+    entry_confirmar.pack(pady=10)
+
+    status = ctk.CTkLabel(cadastro, text="", text_color="red")
+    status.pack(pady=10)
+
+botao_cadastro = ctk.CTkButton(sistema, text="Cadastrar funcionário", command=tela_cadastro)
+botao_cadastro.pack(pady=10)
+
+
+sistema.mainloop()
