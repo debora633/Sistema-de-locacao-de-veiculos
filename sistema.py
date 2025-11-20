@@ -20,11 +20,32 @@ def usuario_existente(usuario_procurado):
         return False  
     return False
 
+def email_existente(email_procurado):
+    try:
+        with open("funcionario.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                linha = linha.strip()
+                if linha == "":  
+                    continue
+
+                partes = linha.split(";")
+                if len(partes) != 4: 
+                    continue
+
+                nome, user, email, senha = partes
+                if email == email_procurado:
+                    return True
+    except FileNotFoundError:
+        return False  
+    return False
 
 
 def salvar_cadastro_txt(nome, usuario, email, senha, confirmar):
     if usuario_existente(usuario):
         return "Usuário já existente! Escolha outro."
+    
+    if email_existente(email):
+        return "O email já foi registrado."
 
     if ("@" not in email) or (".com" not in email and ".br" not in email):
         return "Email inválido."
@@ -60,12 +81,15 @@ def validar_login(usuario_digitado, senha_digitada):
                 nome, usuario, email, senha = partes
 
                 if usuario_digitado == usuario and senha_digitada == senha:
-                    return "Login realizado com sucesso!"
+                    resultado_login.configure(text="Login realizado!", text_color="green")
+                    return
 
     except FileNotFoundError:
-        return "Nenhum funcionário cadastrado ainda."
+        resultado_login.configure(text="Nenhum funcionário cadastro ainda", text_color="red")
+        return
 
-    return "Usuário ou senha incorretos."
+    resultado_login.configure(text="Usuário e/ou senha incorretos", text_color="red")
+     
 
 
 
@@ -85,7 +109,7 @@ label_titulo.pack(pady=20)
 def tentar_login():
     usuario= campo_usuario.get()
     senha= campo_senha.get()
-    validar_login(usuario, senha) 
+    validar_login(usuario, senha)
 
 label_usuario= ctk.CTkLabel(sistema, text="Usuário")
 label_usuario.pack(pady=10)
