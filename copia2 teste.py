@@ -7,6 +7,26 @@ sistema.title("Locação de veículos")
 sistema.geometry("900x600")
 sistema.resizable(False, False)
 
+label_titulo= ctk.CTkLabel(sistema, text="Locadora de Veículos", font=("Arial", 30, "bold"))
+label_titulo.pack(pady=20)
+
+#Label
+label_usuario= ctk.CTkLabel(sistema, text="Usuário")
+label_usuario.pack(pady=10)
+#Entry
+campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite seu usuário")
+campo_usuario.pack(pady=5)
+#Label
+label_senha= ctk.CTkLabel(sistema, text="Senha")
+label_senha.pack()
+#Entry
+campo_usuario=ctk.CTkEntry(sistema, placeholder_text="Digite sua senha")
+campo_usuario.pack()
+#Button
+botao=ctk.CTkButton(sistema,text="Login")
+botao.pack(pady=10)
+
+
 sistema.mainloop()
 
 def usuario_existente(usuario_procurado):  #verifica se tem algum usuario no banco igual ao digitado
@@ -41,4 +61,3 @@ def cadastro_funcionario():
         print("Cadastrado com sucesso!")
     else:
         print("Senha incorreta")
-
