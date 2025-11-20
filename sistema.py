@@ -5,12 +5,21 @@ def usuario_existente(usuario_procurado):
     try:
         with open("funcionario.txt", "r", encoding="utf-8") as arq:
             for linha in arq:
-                nome, user, email, senha = linha.strip().split(";")
+                linha = linha.strip()
+                if linha == "":  
+                    continue
+
+                partes = linha.split(";")
+                if len(partes) != 4: 
+                    continue
+
+                nome, user, email, senha = partes
                 if user == usuario_procurado:
                     return True
     except FileNotFoundError:
         return False  
     return False
+
 
 
 def salvar_cadastro_txt(nome, usuario, email, senha, confirmar):
@@ -36,17 +45,27 @@ def validar_login(usuario_digitado, senha_digitada):
     try:
         with open("funcionario.txt", "r", encoding="utf-8") as arq:
             for linha in arq:
-                nome, usuario, email, senha = linha.strip().split(";")
+                linha = linha.strip()
+
+                
+                if linha == "":
+                    continue
+
+                partes = linha.split(";")
+
+                
+                if len(partes) != 4:
+                    continue
+
+                nome, usuario, email, senha = partes
 
                 if usuario_digitado == usuario and senha_digitada == senha:
-                    resultado_login.configure(text="Login realizado!", text_color="green")
-                    return
+                    return "Login realizado com sucesso!"
+
     except FileNotFoundError:
-        resultado_login.configure(text="Nenhum funcionário cadastro ainda", text_color="red")
-        return
+        return "Nenhum funcionário cadastrado ainda."
 
-    resultado_login.configure(text="Usuário e/ou senha incorretos", text_color="red")
-
+    return "Usuário ou senha incorretos."
 
 
 
