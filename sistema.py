@@ -112,6 +112,8 @@ frame_menu = ctk.CTkFrame(sistema)
 frame_gerenciar_veiculos = ctk.CTkFrame(sistema)
 frame_cadastro_veiculo = ctk.CTkFrame(sistema)
 frame_listar_veiculos = ctk.CTkFrame(sistema)
+frame_editar_veiculo = ctk.CTkFrame(sistema)
+
 
 def mostrar_frame(frame:ctk.CTkFrame):
     frame_login.pack_forget()
@@ -120,6 +122,7 @@ def mostrar_frame(frame:ctk.CTkFrame):
     frame_cadastro_veiculo.pack_forget()
     frame_gerenciar_veiculos.pack_forget()
     frame_listar_veiculos.pack_forget() 
+    frame_editar_veiculo.pack_forget()
     frame.pack(fill="both", expand=True)
 
 #TELA DE LOGINN
@@ -236,12 +239,76 @@ titulo_veiculos.pack(pady=20)
 # Botões de gerenciamento
 ctk.CTkButton(frame_gerenciar_veiculos, text="Listar Veículos", width=200, command=lambda: mostrar_frame(frame_listar_veiculos)).pack(pady=10)
 ctk.CTkButton(frame_gerenciar_veiculos,text="Cadastrar Veículo",width=200,command=lambda: mostrar_frame(frame_cadastro_veiculo)).pack(pady=10)
-ctk.CTkButton(frame_gerenciar_veiculos, text="Editar Veículo", width=200).pack(pady=10)
-ctk.CTkButton(frame_gerenciar_veiculos, text="Excluir Veículo", width=200).pack(pady=10)  
+ctk.CTkButton(frame_gerenciar_veiculos, text="Editar/Excluir Veículo", width=200,command=lambda: mostrar_frame(frame_editar_veiculo)).pack(pady=10)
+#ctk.CTkButton(frame_gerenciar_veiculos, text="Excluir Veículo", width=200).pack(pady=10)  
 ctk.CTkButton(frame_gerenciar_veiculos, text="Voltar ao Menu", width=200, fg_color="#444",command=lambda: mostrar_frame(frame_menu)).pack(pady=20)
 
 def gerenciar_veiculos():
     mostrar_frame(frame_gerenciar_veiculos)
+
+
+def editar_veiculo_txt(placa_procurar, nova_marca, novo_modelo, novo_ano, nova_placa):
+    try:
+        linhas_novas = []
+        encontrado = False
+
+        with open("veiculos.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                partes = linha.strip().split(";")
+                if len(partes) != 6:
+                    continue
+
+                marca, modelo, ano, placa, status, preco = partes
+
+                if placa == placa_procurar:
+                    linhas_novas.append(f"{nova_marca};{novo_modelo};{novo_ano};{nova_placa};{status};{preco}\n")
+                    encontrado = True
+                else:
+                    linhas_novas.append(linha)
+
+        if not encontrado:
+            return "Veículo não encontrado."
+
+        with open("veiculos.txt", "w", encoding="utf-8") as arq:
+            arq.writelines(linhas_novas)
+
+        return "Veículo atualizado com sucesso!"
+
+    except:
+        return "Erro ao editar veículo."
+    
+
+
+def excluir_veiculo_txt(placa_procurar):
+    try:
+        linhas_novas = []
+        encontrado = False
+
+        with open("veiculos.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                partes = linha.strip().split(";")
+                if len(partes) != 6:
+                    continue
+
+                marca, modelo, ano, placa, status, preco = partes
+
+                if placa == placa_procurar:
+                    encontrado = True
+                else:
+                    linhas_novas.append(linha)
+
+        if not encontrado:
+            return "Veículo não encontrado."
+
+        with open("veiculos.txt", "w", encoding="utf-8") as arq:
+            arq.writelines(linhas_novas)
+
+        return "Veículo excluído com sucesso!"
+
+    except:
+        return "Erro ao excluir veículo."
+
+
 
 #TELA DE CADASTRO DE VEÍCULOS
 titulo = ctk.CTkLabel(frame_cadastro_veiculo, text="Cadastrar Veículo", font=("Arial", 25, "bold"))
@@ -322,4 +389,56 @@ ctk.CTkButton(frame_listar_veiculos, text="Voltar", width=200, fg_color="#444", 
 def listar_veiculos():
     mostrar_frame(frame_listar_veiculos)
     
+
+# TELA DE EDITAR VEÍCULOS
+
+titulo_edit = ctk.CTkLabel(frame_editar_veiculo, text="Editar / Excluir Veículo", font=("Arial", 25, "bold"))
+titulo_edit.pack(pady=20)
+
+entry_edit_marca = ctk.CTkEntry(frame_editar_veiculo, placeholder_text="Nova Marca", width=300)
+entry_edit_marca.pack(pady=10)
+
+entry_edit_modelo = ctk.CTkEntry(frame_editar_veiculo, placeholder_text="Novo Modelo", width=300)
+entry_edit_modelo.pack(pady=10)
+
+entry_edit_ano = ctk.CTkEntry(frame_editar_veiculo, placeholder_text="Novo Ano", width=300)
+entry_edit_ano.pack(pady=10)
+
+entry_edit_placa = ctk.CTkEntry(frame_editar_veiculo, placeholder_text="Placa do veículo a alterar", width=300)
+entry_edit_placa.pack(pady=10)
+
+resultado_edit = ctk.CTkLabel(frame_editar_veiculo, text="")
+resultado_edit.pack(pady=10)
+
+
+def clicar_editar():
+    placa = entry_edit_placa.get()
+    marca = entry_edit_marca.get()
+    modelo = entry_edit_modelo.get()
+    ano = entry_edit_ano.get()
+
+    if not marca or not modelo or not ano or not placa:
+        resultado_edit.configure(text="Preencha todos os campos", text_color="red")
+        return
+
+    msg = editar_veiculo_txt(placa, marca, modelo, ano, placa)
+    resultado_edit.configure(text=msg, text_color="green" if "sucesso" in msg else "red")
+
+def clicar_excluir():
+    placa = entry_edit_placa.get()
+
+    if not placa:
+        resultado_edit.configure(text="Digite a placa para excluir.", text_color="red")
+        return
+
+    msg = excluir_veiculo_txt(placa)
+    resultado_edit.configure(text=msg, text_color="green" if "sucesso" in msg else "red")
+
+
+ctk.CTkButton(frame_editar_veiculo, text="Editar", width=200, command=clicar_editar).pack(pady=10)
+ctk.CTkButton(frame_editar_veiculo, text="Excluir", width=200, fg_color="red", command=clicar_excluir).pack(pady=10)
+ctk.CTkButton(frame_editar_veiculo, text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_veiculos)).pack(pady=20)
+
+
+
 sistema.mainloop()
