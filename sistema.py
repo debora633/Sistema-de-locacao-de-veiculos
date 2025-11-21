@@ -134,6 +134,13 @@ label_senha.pack()
 campo_senha = ctk.CTkEntry(frame_login, placeholder_text="Digite sua senha", show="*")
 campo_senha.pack(pady=5)
 
+checkbox=ctk.CTkCheckBox(frame_login, 
+                         text="Mostrar senha", 
+                         command=lambda:campo_senha.configure(show="" if checkbox.get()else "*"),
+                         bg_color="transparent", 
+                         text_color="white")
+checkbox.pack(pady=5)
+
 resultado_login = ctk.CTkLabel(frame_login, text="")
 resultado_login.pack(pady=10)
 
@@ -200,7 +207,7 @@ ctk.CTkButton(frame_menu, text="Gerenciar Locações").pack(pady=10)
 ctk.CTkButton(frame_menu, text="Sair do sistema").pack(pady=10)
 
 
-def salvar_veiculo_txt(marca, modelo, ano, placa, preco):
+def salvar_veiculo_txt(marca, modelo, ano, placa, status, preco):
     
     if not marca or not modelo or not ano or not placa or not preco:
         return "Preencha todos os campos!"
@@ -215,7 +222,7 @@ def salvar_veiculo_txt(marca, modelo, ano, placa, preco):
 
     try:
         with open("veiculos.txt", "a", encoding="utf-8") as arq:
-            arq.write(f"{marca};{modelo};{ano};{placa};{preco}\n")
+            arq.write(f"{marca};{modelo};{ano};{placa};{status};{preco}\n")
         return "Veículo cadastrado com sucesso!"
     except:
         return "Erro ao salvar veículo."
@@ -263,9 +270,10 @@ def clicar_salvar_veiculo():
     modelo = entry_modelo.get()
     ano = entry_ano.get()
     placa = entry_placa.get()
+    status = "Disponível"
     preco = entry_preco.get()
 
-    msg = salvar_veiculo_txt(marca, modelo, ano, placa, preco)
+    msg = salvar_veiculo_txt(marca, modelo, ano, placa, status, preco)
     resultado.configure(text=msg, text_color="green" if "sucesso" in msg else "red")
 
 ctk.CTkButton(frame_cadastro_veiculo, text="Cadastrar", width=200, command=clicar_salvar_veiculo).pack(pady=20)
@@ -279,7 +287,7 @@ def cadastrar_veiculo():
 frame_header = ctk.CTkFrame(frame_listar_veiculos) #CABEÇALHO DA TABELA DE VEÍCULOS
 frame_header.pack(pady=10)
 
-colunas=["Marca","Modelo","Ano","Placa","Preço por dia (R$)"]
+colunas=["Marca","Modelo","Ano","Placa","status","Preço/dia (R$)"]
 
 for coluna in colunas:
     label = ctk.CTkLabel(frame_header,text=coluna,width=150,font=("Arial",12,"bold"))
@@ -295,13 +303,13 @@ try:
             if linha=="":
                 continue
             partes=linha.split(";")
-            if len(partes)!=5:   #vai ter que mudar pra 6 quando adicionar o status
+            if len(partes)!=6:   
                 continue
-            marca,modelo,ano,placa,preco=partes
+            marca,modelo,ano,placa,status,preco=partes
             frame_linha=ctk.CTkFrame(frame_lista)
             frame_linha.pack(pady=5)
 
-            for item in [marca, modelo, ano, placa, preco]:
+            for item in [marca, modelo, ano, placa, status, preco]:
                 label_item=ctk.CTkLabel(frame_linha,text=item,width=150)
                 label_item.pack(side="left", padx=5)
 except FileNotFoundError:
