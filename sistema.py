@@ -108,6 +108,7 @@ label_titulo.pack(pady=20)
 frame_login = ctk.CTkFrame(sistema)
 frame_cadastro = ctk.CTkFrame(sistema)
 frame_menu = ctk.CTkFrame(sistema)
+frame_listar_veiculos = ctk.CTkFrame(sistema)
 
 label_usuario = ctk.CTkLabel(frame_login, text="Usuário")
 label_usuario.pack(pady=10)
@@ -127,7 +128,7 @@ resultado_login.pack(pady=10)
 def tentar_login():
     usuario = campo_usuario.get()
     senha = campo_senha.get()
-    resultado = validar_login(usuario, senha)
+    validar_login(usuario, senha)
 
 botao_login = ctk.CTkButton(frame_login, text="Login", command=tentar_login)
 botao_login.pack(pady=10)
@@ -238,7 +239,7 @@ def gerenciar_veiculos():
     titulo_veiculos.pack(pady=20)
 
     # Botões de gerenciamento
-    ctk.CTkButton(frame_veiculos, text="Listar Veículos", width=200).pack(pady=10)
+    ctk.CTkButton(frame_veiculos, text="Listar Veículos", width=200, command=lambda: tela_listar_veiculos(frame_veiculos)).pack(pady=10)
     ctk.CTkButton(frame_veiculos,text="Cadastrar Veículo",width=200,command=lambda: cadastrar_veiculo(frame_veiculos)).pack(pady=10)
     ctk.CTkButton(frame_veiculos, text="Editar Veículo", width=200).pack(pady=10)
     ctk.CTkButton(frame_veiculos, text="Excluir Veículo", width=200).pack(pady=10)
@@ -296,7 +297,51 @@ def cadastrar_veiculo(frame_anterior):
     ctk.CTkButton(frame_cadastro_veiculo, text="Cadastrar", width=200, command=clicar_salvar_veiculo).pack(pady=20)
 
     botao_voltar = ctk.CTkButton(frame_cadastro_veiculo,text="Voltar", width=200,fg_color="#444",command=lambda: [frame_cadastro_veiculo.pack_forget(),gerenciar_veiculos()]).pack(pady=10)
+    botao_voltar.pack(pady=20)
+    
 
+#Tela de listar veículos
+def tela_listar_veiculos(frame_veiculos):
 
+    for widget in frame_veiculos.winfo_children():
+        widget.destroy()
+
+    #CABEÇALHO DA TABELA DE VEÍCULOS
+    frame_header = ctk.CTkFrame(frame_veiculos)
+    frame_header.pack(pady=10)
+
+    colunas=["Marca","Modelo","Ano","Placa","Preço por dia (R$)"]
+
+    for coluna in colunas:
+        label = ctk.CTkLabel(frame_header,text=coluna,width=150,font=("Arial",12,"bold"))
+        label.pack(side="left", padx=5)
+
+    frame_lista = ctk.CTkFrame(frame_veiculos)
+    frame_lista.pack(pady=10)
+
+    try:
+        with open ("veiculos.txt", "r", encoding=("utf-8") )as arq:
+            for linha in arq:
+                linha=linha.strip()
+                if linha=="":
+                    continue
+
+                partes=linha.split(";")
+                if len(partes)!=5:   #vai ter que mudar pra 6 quando adicionar o status
+                    continue
+                marca,modelo,ano,placa,preco=partes
+                frame_linha=ctk.CTkFrame(frame_lista)
+                frame_linha.pack(pady=5)
+
+                for item in [marca, modelo, ano, placa, preco]:
+                    label_item=ctk.CTkLabel(frame_linha,text=item,width=150)
+                    label_item.pack(side="left", padx=5)
+    except FileNotFoundError:
+        label_erro=ctk.CTkLabel(frame_veiculos,text="Nenhum veículo cadastrado ainda.",text_color="red")
+        label_erro.pack(pady=20)
+
+    #Botão de voltar
+    botao_voltar = ctk.CTkButton(frame_veiculos, text="Voltar", width=200, fg_color="#444", command=lambda: [frame_listar_veiculos.pack_forget(), gerenciar_veiculos()])
+    botao_voltar.pack(pady=20)
 
 sistema.mainloop()

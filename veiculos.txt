@@ -1,0 +1,3 @@
+Ford;KA;2008;HC8BD83U481;230
+ford;ka;2008;;
+renault;sandero;2019;abcd;250
