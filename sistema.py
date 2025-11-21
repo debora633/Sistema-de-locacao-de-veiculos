@@ -83,6 +83,7 @@ def validar_login(usuario_digitado, senha_digitada):
 
                 if usuario_digitado == usuario and senha_digitada == senha:
                     resultado_login.configure(text="Login realizado!", text_color="green")
+                    mostrar_menu(frame_menu)
                     return
 
     except FileNotFoundError:
@@ -104,7 +105,7 @@ label_titulo.pack(pady=20)
 
 frame_login = ctk.CTkFrame(sistema)
 frame_cadastro = ctk.CTkFrame(sistema)
-
+frame_menu = ctk.CTkFrame(sistema)
 
 label_usuario = ctk.CTkLabel(frame_login, text="Usuário")
 label_usuario.pack(pady=10)
@@ -119,15 +120,12 @@ campo_senha.pack(pady=5)
 resultado_login = ctk.CTkLabel(frame_login, text="")
 resultado_login.pack(pady=10)
 
+    
 #TELA DE LOGINN
 def tentar_login():
     usuario = campo_usuario.get()
     senha = campo_senha.get()
     resultado = validar_login(usuario, senha)
-    if resultado == "Login realizado com sucesso!":
-        resultado_login.configure(text=resultado, text_color="green")
-    else:
-        resultado_login.configure(text=resultado, text_color="red")
 
 botao_login = ctk.CTkButton(frame_login, text="Login", command=tentar_login)
 botao_login.pack(pady=10)
@@ -190,6 +188,26 @@ def voltar_login():
 
 botao_voltar = ctk.CTkButton(frame_cadastro, text="Voltar para Login", command=voltar_login)
 botao_voltar.pack(pady=10)
+
+#TELA DE MENU PRINCIPAL
+def mostrar_menu(frame):
+    frame_login.pack_forget()
+    frame_cadastro.pack_forget()
+    frame_menu.pack_forget()
+    frame.pack(fill="both", expand=True)
+                    
+label_titulo= ctk.CTkLabel(frame_menu, text="MENU PRINCIPAL", font=("Arial", 30, "bold"))
+label_titulo.pack(pady=20)
+
+botao1=ctk.CTkButton(frame_menu,text="Gerenciar Veículos")
+botao1.pack(pady=10)
+
+botao2=ctk.CTkButton(frame_menu,text="Gerenciar Locações")
+botao2.pack(pady=10)
+
+botao3=ctk.CTkButton(frame_menu,text="Sair do sistema")
+botao3.pack(pady=10)
+
 
 
 sistema.mainloop()
