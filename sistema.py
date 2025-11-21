@@ -201,13 +201,24 @@ ctk.CTkButton(frame_menu, text="Sair do sistema").pack(pady=10)
 
 
 def salvar_veiculo_txt(marca, modelo, ano, placa, preco):
+    
+    if not marca or not modelo or not ano or not placa or not preco:
+        return "Preencha todos os campos!"
+
+    if not ano.isdigit():
+        return "Ano inválido. Digite apenas números."
+
+    try:
+        float(preco)
+    except:
+        return "Preço inválido. Digite um valor numérico."
+
     try:
         with open("veiculos.txt", "a", encoding="utf-8") as arq:
             arq.write(f"{marca};{modelo};{ano};{placa};{preco}\n")
         return "Veículo cadastrado com sucesso!"
     except:
         return "Erro ao salvar veículo."
-
 
 
 #Tela de gerenciar veículos
