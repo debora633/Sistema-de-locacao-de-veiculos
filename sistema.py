@@ -114,6 +114,7 @@ frame_cadastro_veiculo = ctk.CTkFrame(sistema)
 frame_listar_veiculos = ctk.CTkFrame(sistema)
 frame_editar_veiculo = ctk.CTkFrame(sistema)
 frame_gerenciar_locacoes = ctk.CTkFrame(sistema)
+frame_registrar_locacao = ctk.CTkFrame(sistema)
 
 
 def mostrar_frame(frame:ctk.CTkFrame):
@@ -125,6 +126,7 @@ def mostrar_frame(frame:ctk.CTkFrame):
     frame_listar_veiculos.pack_forget() 
     frame_editar_veiculo.pack_forget()
     frame_gerenciar_locacoes.pack_forget()
+    frame_registrar_locacao.pack_forget()
     frame.pack(fill="both", expand=True)
 
 #TELA DE LOGINN
@@ -449,10 +451,10 @@ ctk.CTkButton(frame_editar_veiculo, text="Editar", width=200, command=clicar_edi
 ctk.CTkButton(frame_editar_veiculo, text="Excluir", width=200, fg_color="red", command=clicar_excluir).pack(pady=10)
 ctk.CTkButton(frame_editar_veiculo, text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_veiculos)).pack(pady=20)
 
-#TELA_GERENCIAR_LOCAÇÕES
+#TELA GERENCIAR LOCAÇÕES
 
 ctk.CTkLabel(frame_editar_veiculo, text="Gerenciar Locações", font=("Arial", 25, "bold")).pack(pady=20)
-ctk.CTkButton(frame_gerenciar_locacoes, text="Registrar locação", width=200).pack(pady=20)
+ctk.CTkButton(frame_gerenciar_locacoes, text="Registrar locação", width=200, command=lambda:mostrar_frame(frame_registrar_locacao)).pack(pady=20)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Editar locação", width=200).pack(pady=20)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Devolução", width=200).pack(pady=20)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Voltar", width=200, fg_color="#444", command = lambda:mostrar_frame(frame_menu)).pack(pady=20)
@@ -460,6 +462,86 @@ ctk.CTkButton(frame_gerenciar_locacoes, text="Voltar", width=200, fg_color="#444
 def gerenciar_locacoes():
     mostrar_frame(frame_gerenciar_locacoes)
 
+#TELA REGISTRAR LOCAÇÃO
 
+def placas_comebox():
+    placas=[]
+    with open("veiculos.txt","r",encoding="utf-8") as arq:
+        for linha in arq:
+            linha=linha.strip().split(";")
+            placa=linha[3]
+            placas.append(placa)
+    return placas
+
+lista=placas_comebox()       
+
+scroll_frame = ctk.CTkScrollableFrame(frame_registrar_locacao, width=600, height=500)
+scroll_frame.pack(padx=20, pady=20, fill="both", expand=True)
+
+ctk.CTkLabel(scroll_frame, text="Registrar Locações", font=("Arial", 25, "bold")).pack(pady=20)
+
+#dados do veículo
+ctk.CTkLabel(scroll_frame , text="Dados do veículo", font=("Arial", 15, "bold")).pack(pady=10)
+combobox=ctk.CTkComboBox(scroll_frame , values=lista, width=200)
+combobox.set("----Selecione a placa----")
+combobox.pack(pady=10)
+
+label_marca=ctk.CTkLabel(scroll_frame , text="Marca: -", font=("Arial", 15, "bold"))
+label_marca.pack(anchor="w", padx=20, pady=3)
+
+label_modelo=ctk.CTkLabel(scroll_frame , text="Modelo: -", font=("Arial", 15, "bold"))
+label_modelo.pack(anchor="w", padx=20, pady=3)
+
+label_ano=ctk.CTkLabel(scroll_frame , text="Ano: -", font=("Arial", 15, "bold"))
+label_ano.pack(anchor="w", padx=20, pady=3)
+
+label_placa=ctk.CTkLabel(scroll_frame , text="Placa: -", font=("Arial", 15, "bold"))
+label_placa.pack(anchor="w", padx=20, pady=3)
+
+label_status=ctk.CTkLabel(scroll_frame , text="Status: -", font=("Arial", 15, "bold"))
+label_status.pack(anchor="w", padx=20, pady=3)
+
+label_preco=ctk.CTkLabel(scroll_frame , text="Preço por dia(R$): -", font=("Arial", 15, "bold"))
+label_preco.pack(anchor="w", padx=20, pady=3)
+
+
+def exibir_dados_veiculo(placa):
+    try:
+        with open("veiculos.txt","r",encoding="utf-8") as arq:
+            for linha in arq:
+                linha=linha.strip().split(";")
+                if linha[3]==placa:
+                    marca,modelo,ano,placa,status,preco=linha
+                    label_marca.configure(text=f"Marca: {marca}")
+                    label_modelo.configure(text=f"Modelo: {modelo}")
+                    label_ano.configure(text=f"Ano: {ano}")
+                    label_placa.configure(text=f"Placa: {placa}")
+                    label_status.configure(text=f"Status: {status}")
+                    label_preco.configure(text=f"Preço por dia(R$): {preco}")
+                    return
+    except FileNotFoundError:
+        pass
+
+combobox.configure(command=exibir_dados_veiculo)
+
+#datas
+ctk.CTkLabel(scroll_frame , text="Dados da locação", font=("Arial", 15, "bold")).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="Data de retirada (DD/MM/AA)", width=250).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="Data prevista de devolução (DD/MM/AA)", width=250).pack(pady=10)
+
+#cliente
+ctk.CTkLabel(scroll_frame , text="Dados do cliente", font=("Arial", 15, "bold")).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="Nome completo", width=300).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="CPF", width=300).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="Telefone", width=300).pack(pady=10) 
+ctk.CTkEntry(scroll_frame , placeholder_text="Email", width=300).pack(pady=10)
+ctk.CTkEntry(scroll_frame , placeholder_text="Endereço", width=300).pack(pady=10)
+
+#botões
+ctk.CTkButton(scroll_frame , text="Registrar Locação", width=200).pack(pady=20)
+ctk.CTkButton(scroll_frame , text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_locacoes)).pack(pady=20)
+
+def registrar_locacao():
+    mostrar_frame(frame_registrar_locacao)
 
 sistema.mainloop()
