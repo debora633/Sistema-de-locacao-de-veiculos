@@ -113,6 +113,7 @@ frame_gerenciar_veiculos = ctk.CTkFrame(sistema)
 frame_cadastro_veiculo = ctk.CTkFrame(sistema)
 frame_listar_veiculos = ctk.CTkFrame(sistema)
 frame_editar_veiculo = ctk.CTkFrame(sistema)
+frame_gerenciar_locacoes = ctk.CTkFrame(sistema)
 
 
 def mostrar_frame(frame:ctk.CTkFrame):
@@ -123,6 +124,7 @@ def mostrar_frame(frame:ctk.CTkFrame):
     frame_gerenciar_veiculos.pack_forget()
     frame_listar_veiculos.pack_forget() 
     frame_editar_veiculo.pack_forget()
+    frame_gerenciar_locacoes.pack_forget()
     frame.pack(fill="both", expand=True)
 
 #TELA DE LOGINN
@@ -206,9 +208,11 @@ label_titulo.pack(pady=20)
 
 # Botão que chama a tela Gerenciar Veículos
 ctk.CTkButton(frame_menu,text="Gerenciar Veículos",command=lambda: mostrar_frame(frame_gerenciar_veiculos)).pack(pady=10)
-ctk.CTkButton(frame_menu, text="Gerenciar Locações").pack(pady=10)
-ctk.CTkButton(frame_menu, text="Sair do sistema").pack(pady=10)
+ctk.CTkButton(frame_menu, text="Gerenciar Locações", command=lambda: mostrar_frame(frame_gerenciar_locacoes)).pack(pady=10)
+ctk.CTkButton(frame_menu, text="Sair do sistema", command=lambda:sair_sistema()).pack(pady=10)
 
+def sair_sistema():
+    sistema.destroy()
 
 def salvar_veiculo_txt(marca, modelo, ano, placa, status, preco):
     
@@ -444,6 +448,17 @@ def clicar_excluir():
 ctk.CTkButton(frame_editar_veiculo, text="Editar", width=200, command=clicar_editar).pack(pady=10)
 ctk.CTkButton(frame_editar_veiculo, text="Excluir", width=200, fg_color="red", command=clicar_excluir).pack(pady=10)
 ctk.CTkButton(frame_editar_veiculo, text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_veiculos)).pack(pady=20)
+
+#TELA_GERENCIAR_LOCAÇÕES
+
+ctk.CTkLabel(frame_editar_veiculo, text="Gerenciar Locações", font=("Arial", 25, "bold")).pack(pady=20)
+ctk.CTkButton(frame_gerenciar_locacoes, text="Registrar locação", width=200).pack(pady=20)
+ctk.CTkButton(frame_gerenciar_locacoes, text="Editar locação", width=200).pack(pady=20)
+ctk.CTkButton(frame_gerenciar_locacoes, text="Devolução", width=200).pack(pady=20)
+ctk.CTkButton(frame_gerenciar_locacoes, text="Voltar", width=200, fg_color="#444", command = lambda:mostrar_frame(frame_menu)).pack(pady=20)
+
+def gerenciar_locacoes():
+    mostrar_frame(frame_gerenciar_locacoes)
 
 
 
