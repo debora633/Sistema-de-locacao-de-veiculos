@@ -1,5 +1,5 @@
 import customtkinter as ctk
-
+import re
 
 
 def usuario_existente(usuario_procurado):
@@ -217,7 +217,10 @@ def salvar_veiculo_txt(marca, modelo, ano, placa, status, preco):
 
     if not ano.isdigit():
         return "Ano inválido. Digite apenas números."
-
+        
+    if not re.fullmatch(r"[A-Z]{3}[0-9][A-Z][0-9]{2}", placa.upper()):
+        return "Placa no padrão MERCOSUL inválida! Ex.: ABC1D23"
+    
     try:
         float(preco)
     except:
@@ -268,6 +271,9 @@ def editar_veiculo_txt(placa_procurar, nova_marca, novo_modelo, novo_ano, nova_p
 
         if not encontrado:
             return "Veículo não encontrado."
+
+        if not re.fullmatch(r"[A-Z]{3}[0-9][A-Z][0-9]{2}", placa.upper()):
+            return "Placa no padrão MERCOSUL inválida! Ex.: ABC1D23"
 
         with open("veiculos.txt", "w", encoding="utf-8") as arq:
             arq.writelines(linhas_novas)
