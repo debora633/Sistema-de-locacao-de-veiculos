@@ -1,6 +1,15 @@
 import customtkinter as ctk
 import re
 
+        
+#salvar dados da locação
+def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa):
+    try:
+        with open("locacao.txt", "a", encoding="utf-8") as arq:
+            arq.write(f"{nome};{cpf};{telefone};{email};{endereco};{placa}\n")
+        return "Cadastrado com sucesso!"
+    except:
+        return "Erro ao salvar no banco de dados."
 
 def usuario_existente(usuario_procurado):
     try:
@@ -93,7 +102,6 @@ def validar_login(usuario_digitado, senha_digitada):
         return
 
     resultado_login.configure(text="Usuário e/ou senha incorretos", text_color="red")
-
 
 #JANELA PRINCIPAL
 ctk.set_appearance_mode("dark")
@@ -531,16 +539,53 @@ ctk.CTkEntry(scroll_frame , placeholder_text="Data prevista de devolução (DD/M
 
 #cliente
 ctk.CTkLabel(scroll_frame , text="Dados do cliente", font=("Arial", 15, "bold")).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="Nome completo", width=300).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="CPF", width=300).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="Telefone", width=300).pack(pady=10) 
-ctk.CTkEntry(scroll_frame , placeholder_text="Email", width=300).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="Endereço", width=300).pack(pady=10)
+
+entrada_nome=ctk.CTkEntry(scroll_frame , placeholder_text="Nome completo", width=300)
+entrada_nome.pack(pady=10)
+
+entrada_cpf=ctk.CTkEntry(scroll_frame , placeholder_text="CPF", width=300)
+entrada_cpf.pack(pady=10)
+
+entrada_telefone=ctk.CTkEntry(scroll_frame , placeholder_text="Telefone", width=300)
+entrada_telefone.pack(pady=10) 
+
+entrada_email=ctk.CTkEntry(scroll_frame , placeholder_text="Email", width=300)
+entrada_email.pack(pady=10)
+
+entrada_endereco=ctk.CTkEntry(scroll_frame , placeholder_text="Endereço", width=300)
+entrada_endereco.pack(pady=10)
+
+situacao = ctk.CTkLabel(scroll_frame, text="", text_color="red")
+situacao.pack(pady=10)
+#salvar dados da locação
+def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa):
+    try:
+        with open("locacao.txt", "a", encoding="utf-8") as arq:
+            arq.write(f"{nome};{cpf};{telefone};{email};{endereco};{placa}\n")
+        return "Cadastrado com sucesso!"
+    except:
+        return "Erro ao salvar no banco de dados."
+    
+#LEMBRAR DE COLOCAR AS RESGRIÇÕES
+def clicar_cadastrar_locacao():
+    nome = entrada_nome.get()
+    cpf = entrada_cpf.get()
+    telefone = entrada_telefone.get()
+    email = entrada_email.get()
+    endereco = entrada_endereco.get()
+
+    placa = combobox.get()
+
+    resultado = registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa)
+
+    if resultado == "Cadastrado com sucesso!":
+        situacao.configure(text=resultado, text_color="green")
+    else:
+        situacao.configure(text=resultado, text_color="red")
 
 #botões
-ctk.CTkButton(scroll_frame , text="Registrar Locação", width=200).pack(pady=20)
+ctk.CTkButton(scroll_frame , text="Registrar Locação", width=200, command=clicar_cadastrar_locacao).pack(pady=20)
 ctk.CTkButton(scroll_frame , text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_locacoes)).pack(pady=20)
-
 def registrar_locacao():
     mostrar_frame(frame_registrar_locacao)
 
