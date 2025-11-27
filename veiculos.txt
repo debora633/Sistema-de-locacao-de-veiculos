@@ -1,2 +1,4 @@
 renault;sandero;123;12344314;Disponível;140.00
 ford;ka;1900;abc1d23;Disponível;240
+renault;ford;1900;ABC1D23;Disponível;230camaro;ferrari;2008;GHF1M23;Disponível;600
+camaro;ferrari;2025;HJG1M23;Disponível;1000
