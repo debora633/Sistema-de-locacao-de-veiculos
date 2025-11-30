@@ -7,7 +7,7 @@ from tkinter import messagebox
 def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa, retirada, prevista):
     try:
         with open("locacao.txt", "a", encoding="utf-8") as arq:
-            linha = f"{nome};{cpf};{telefone};{email};{endereco};{placa};{retirada};{prevista};ATIVA\n"
+            linha = f"{nome};{cpf};{telefone};{email};{endereco};{placa};{retirada};{prevista};Alugado\n"
             arq.write(linha)
         return "Cadastrado com sucesso!"
     except:
@@ -84,7 +84,7 @@ def buscar_locacao_por_cpf(cpf):
 
                 nome, cpf_reg, tel, email, end, placa, retirada, prevista, status = dados
 
-                if cpf_reg == cpf and status == "ATIVA":
+                if cpf_reg == cpf and status == "Alugado":
                     veiculo = ler_veiculo_por_placa(placa)
                     return {
                         "nome": nome,
@@ -158,6 +158,58 @@ def validar_login(usuario_digitado, senha_digitada):
 
     resultado_login.configure(text="Usuário e/ou senha incorretos", text_color="red")
 
+def validar_cadastro_locacao(nome, cpf, telefone, email, endereco, placa):
+    if len(nome.strip()) == 0:
+        return "O nome não pode ficar em branco."
+
+    if not cpf.isdigit() or len(cpf) != 11:
+        return "CPF inválido. Deve conter 11 números."
+    
+    if not telefone.isdigit():
+        return "O telefone deve conter apenas números."
+    
+    if len(telefone) < 10 or len(telefone) > 11:
+        return "Telefone inválido. Deve ter 10 ou 11 dígitos."
+
+    if "@" not in email or "." not in email:
+        return "Email inválido."
+
+    if len(endereco.strip()) == 0:
+        return "O endereço não pode ficar em branco."
+
+    if placa == "----Selecione a placa----":
+        return "Selecione uma placa."
+
+    return "OK"
+
+def atualizar_status_veiculo(placa_alugada, novo_status):
+    linhas_novas = []
+    try:
+        with open("veiculos.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                dados = linha.strip().split(";")
+
+                # Se a linha for inválida, apenas mantém ela
+                if len(dados) != 6:
+                    linhas_novas.append(linha)
+                    continue
+
+                marca, modelo, ano, placa, status, preco = dados
+
+                if placa == placa_alugada:
+                    nova_linha = f"{marca};{modelo};{ano};{placa};{novo_status};{preco}\n"
+                    linhas_novas.append(nova_linha)
+                else:
+                    linhas_novas.append(linha)
+
+        with open("veiculos.txt", "w", encoding="utf-8") as arq:
+            arq.writelines(linhas_novas)
+
+        return True
+    except Exception as e:
+        print("Erro ao atualizar veículo:", e)
+        return False
+
 #JANELA PRINCIPAL
 ctk.set_appearance_mode("dark")
 sistema = ctk.CTk()
@@ -193,6 +245,7 @@ def mostrar_frame(frame:ctk.CTkFrame):
     frame_registrar_locacao.pack_forget()
     frame_devolucao_locacao.pack_forget()
     frame.pack(fill="both", expand=True)
+
 
 #TELA DE LOGINN
 
@@ -385,7 +438,6 @@ def excluir_veiculo_txt(placa_procurar):
         return "Erro ao excluir veículo."
 
 
-
 #TELA DE CADASTRO DE VEÍCULOS
 titulo = ctk.CTkLabel(frame_cadastro_veiculo, text="Cadastrar Veículo", font=("Arial", 25, "bold"))
 titulo.pack(pady=20)
@@ -413,7 +465,7 @@ def clicar_salvar_veiculo():
     modelo = entry_modelo.get()
     ano = entry_ano.get()
     placa = entry_placa.get()
-    status = "Disponível"
+    status = "Disponivel"
     preco = entry_preco.get()
 
     msg = salvar_veiculo_txt(marca, modelo, ano, placa, status, preco)
@@ -523,7 +575,6 @@ ctk.CTkButton(frame_editar_veiculo, text="Voltar", width=200, fg_color="#444", c
 
 ctk.CTkLabel(frame_gerenciar_locacoes, text="Gerenciar Locações", font=("Arial", 25, "bold")).pack(pady=20)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Registrar locação", width=200, command=lambda:mostrar_frame(frame_registrar_locacao)).pack(pady=10)
-ctk.CTkButton(frame_gerenciar_locacoes, text="Editar locação", width=200).pack(pady=10)
 ctk.CTkButton(
     frame_gerenciar_locacoes,
     text="Devolução",
@@ -538,12 +589,24 @@ def gerenciar_locacoes():
 #TELA REGISTRAR LOCAÇÃO
 
 def placas_comebox():
-    placas=[]
-    with open("veiculos.txt","r",encoding="utf-8") as arq:
-        for linha in arq:
-            linha=linha.strip().split(";")
-            placa=linha[3]
-            placas.append(placa)
+    placas = []
+    try:
+        with open("veiculos.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                dados = linha.strip().split(";")
+
+                # Se a linha for vazia ou tiver menos que 6 colunas → ignora
+                if len(dados) < 6:
+                    continue
+
+                placa = dados[3]
+                status = dados[4]
+
+                if status.strip() == "Disponivel":
+                    placas.append(placa)
+    except FileNotFoundError:
+        pass
+
     return placas
 
 lista=placas_comebox()       
@@ -582,9 +645,14 @@ def exibir_dados_veiculo(placa):
     try:
         with open("veiculos.txt","r",encoding="utf-8") as arq:
             for linha in arq:
-                linha=linha.strip().split(";")
-                if linha[3]==placa:
-                    marca,modelo,ano,placa,status,preco=linha
+                dados = linha.strip().split(";")
+
+                # IGNORA linhas incompletas ou vazias
+                if len(dados) != 6:
+                    continue
+
+                if dados[3] == placa:
+                    marca, modelo, ano, placa, status, preco = dados
                     label_marca.configure(text=f"Marca: {marca}")
                     label_modelo.configure(text=f"Modelo: {modelo}")
                     label_ano.configure(text=f"Ano: {ano}")
@@ -599,8 +667,11 @@ combobox.configure(command=exibir_dados_veiculo)
 
 #datas
 ctk.CTkLabel(scroll_frame , text="Dados da locação", font=("Arial", 15, "bold")).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="Data de retirada (DD/MM/AA)", width=250).pack(pady=10)
-ctk.CTkEntry(scroll_frame , placeholder_text="Data prevista de devolução (DD/MM/AA)", width=250).pack(pady=10)
+entrada_retirada=ctk.CTkEntry(scroll_frame , placeholder_text="Data de retirada (DD/MM/AAAA)", width=250)
+entrada_retirada.pack(pady=10)
+
+entrada_devolucao_prevista=ctk.CTkEntry(scroll_frame , placeholder_text="Data prevista de devolução (DD/MM/AAAA)", width=250)
+entrada_devolucao_prevista.pack(pady=10)
 
 #cliente
 ctk.CTkLabel(scroll_frame , text="Dados do cliente", font=("Arial", 15, "bold")).pack(pady=10)
@@ -622,11 +693,13 @@ entrada_endereco.pack(pady=10)
 
 situacao = ctk.CTkLabel(scroll_frame, text="", text_color="red")
 situacao.pack(pady=10)
+
 #salvar dados da locação
-def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa):
+def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa, retirada, devolucao):
     try:
+        linha = f"{nome};{cpf};{telefone};{email};{endereco};{placa};{retirada};{devolucao};Alugado\n"
         with open("locacao.txt", "a", encoding="utf-8") as arq:
-            arq.write(f"{nome};{cpf};{telefone};{email};{endereco};{placa}\n")
+            arq.write(linha)
         return "Cadastrado com sucesso!"
     except:
         return "Erro ao salvar no banco de dados."
@@ -641,9 +714,25 @@ def clicar_cadastrar_locacao():
 
     placa = combobox.get()
 
-    resultado = registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa)
+    retirada = entrada_retirada.get().strip()
+    devolucao = entrada_devolucao_prevista.get().strip()
+
+    validacao = validar_cadastro_locacao(nome, cpf, telefone, email, endereco, placa)
+    if validacao != "OK":
+        situacao.configure(text=validacao, text_color="red")
+        return
+    
+    try:
+        datetime.strptime(retirada, "%d/%m/%Y")
+        datetime.strptime(devolucao, "%d/%m/%Y")
+    except Exception:
+        situacao.configure(text="Datas inválidas. Use DD/MM/AAAA.", text_color="red")
+        return
+
+    resultado = registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa, retirada, devolucao)
 
     if resultado == "Cadastrado com sucesso!":
+        atualizar_status_veiculo(placa,"Alugado")
         situacao.configure(text=resultado, text_color="green")
     else:
         situacao.configure(text=resultado, text_color="red")
@@ -653,6 +742,18 @@ ctk.CTkButton(scroll_frame , text="Registrar Locação", width=200, command=clic
 ctk.CTkButton(scroll_frame , text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_locacoes)).pack(pady=20)
 def registrar_locacao():
     mostrar_frame(frame_registrar_locacao)
+
+    lista = placas_comebox()
+    combobox.configure(values=lista)
+
+    combobox.set("----Selecione a placa----")
+
+    entrada_nome.delete(0, "end")
+    entrada_cpf.delete(0, "end")
+    entrada_telefone.delete(0, "end")
+    entrada_email.delete(0, "end")
+    entrada_endereco.delete(0, "end")
+    situacao.configure(text="")
 
 
 def registrar_devolucao(cpf):
@@ -664,11 +765,12 @@ def registrar_devolucao(cpf):
                 if len(dados) < 9:
                     linhas_novas.append(linha) 
                     continue
-                nome, cpf_reg, tel, email, end, placa, retirada, prevista, status = dados
+                nome, cpf_reg, tel, email, end, placa, retirada, devolucao, status = dados
                 
-                if cpf == cpf_reg and status == "ATIVA":
-                    nova_linha = f"{nome};{cpf_reg};{tel};{email};{end};{placa};{retirada};{prevista};DEVOLVIDA\n"
+                if cpf == cpf_reg and status == "Alugado":
+                    nova_linha = f"{nome};{cpf_reg};{tel};{email};{end};{placa};{retirada};{devolucao};Disponivel\n"
                     linhas_novas.append(nova_linha)
+                    atualizar_status_veiculo(placa, "Disponivel")
                 else:
                     linhas_novas.append(linha)
         
