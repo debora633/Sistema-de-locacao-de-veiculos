@@ -1,15 +1,18 @@
 import customtkinter as ctk
 import re
-
+from datetime import datetime
+from tkinter import messagebox
         
 #salvar dados da locação
-def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa):
+def registrar_locacao_txt(nome, cpf, telefone, email, endereco, placa, retirada, prevista):
     try:
         with open("locacao.txt", "a", encoding="utf-8") as arq:
-            arq.write(f"{nome};{cpf};{telefone};{email};{endereco};{placa}\n")
+            linha = f"{nome};{cpf};{telefone};{email};{endereco};{placa};{retirada};{prevista};ATIVA\n"
+            arq.write(linha)
         return "Cadastrado com sucesso!"
     except:
         return "Erro ao salvar no banco de dados."
+
 
 def usuario_existente(usuario_procurado):
     try:
@@ -48,6 +51,58 @@ def email_existente(email_procurado):
     except FileNotFoundError:
         return False  
     return False
+
+
+def ler_veiculo_por_placa(placa_procurada):
+    try:
+        with open("veiculos.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                partes = linha.strip().split(";")
+                if len(partes) != 6:
+                    continue
+                marca, modelo, ano, placa, status, preco = partes
+                if placa == placa_procurada:
+                    return {
+                        "marca": marca,
+                        "modelo": modelo,
+                        "ano": ano,
+                        "placa": placa
+                    }
+    except FileNotFoundError:
+        return None
+    return None
+
+
+def buscar_locacao_por_cpf(cpf):
+    try:
+        with open("locacao.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                dados = linha.strip().split(";")
+
+                if len(dados) != 9:
+                    continue  
+
+                nome, cpf_reg, tel, email, end, placa, retirada, prevista, status = dados
+
+                if cpf_reg == cpf and status == "ATIVA":
+                    veiculo = ler_veiculo_por_placa(placa)
+                    return {
+                        "nome": nome,
+                        "cpf": cpf_reg,
+                        "telefone": tel,
+                        "email": email,
+                        "endereco": end,
+                        "placa": placa,
+                        "retirada": retirada,
+                        "prevista": prevista,
+                        "status": status,
+                        "marca": veiculo.get("marca") if veiculo else "",
+                        "modelo": veiculo.get("modelo") if veiculo else "",
+                        "ano": veiculo.get("ano") if veiculo else "",
+                    }
+        return None
+    except FileNotFoundError:
+        return None
 
 
 
@@ -123,6 +178,7 @@ frame_listar_veiculos = ctk.CTkFrame(sistema)
 frame_editar_veiculo = ctk.CTkFrame(sistema)
 frame_gerenciar_locacoes = ctk.CTkFrame(sistema)
 frame_registrar_locacao = ctk.CTkFrame(sistema)
+frame_devolucao_locacao = ctk.CTkFrame(sistema)
 
 
 def mostrar_frame(frame:ctk.CTkFrame):
@@ -135,6 +191,7 @@ def mostrar_frame(frame:ctk.CTkFrame):
     frame_editar_veiculo.pack_forget()
     frame_gerenciar_locacoes.pack_forget()
     frame_registrar_locacao.pack_forget()
+    frame_devolucao_locacao.pack_forget()
     frame.pack(fill="both", expand=True)
 
 #TELA DE LOGINN
@@ -408,7 +465,7 @@ def carregar_veiculos():
         label_erro=ctk.CTkLabel(frame_listar_veiculos,text="Nenhum veículo cadastrado ainda.",text_color="red")
         label_erro.pack(pady=20)
 
-    #Botão de voltar
+    
     ctk.CTkButton(frame_listar_veiculos, text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_veiculos)).pack(pady=20)
 
     
@@ -467,7 +524,12 @@ ctk.CTkButton(frame_editar_veiculo, text="Voltar", width=200, fg_color="#444", c
 ctk.CTkLabel(frame_gerenciar_locacoes, text="Gerenciar Locações", font=("Arial", 25, "bold")).pack(pady=20)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Registrar locação", width=200, command=lambda:mostrar_frame(frame_registrar_locacao)).pack(pady=10)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Editar locação", width=200).pack(pady=10)
-ctk.CTkButton(frame_gerenciar_locacoes, text="Devolução", width=200).pack(pady=10)
+ctk.CTkButton(
+    frame_gerenciar_locacoes,
+    text="Devolução",
+    width=200,
+    command=lambda: [montar_frame_devolucao(), mostrar_frame(frame_devolucao_locacao)]
+).pack(pady=10)
 ctk.CTkButton(frame_gerenciar_locacoes, text="Voltar", width=200, fg_color="#444", command = lambda:mostrar_frame(frame_menu)).pack(pady=10)
 
 def gerenciar_locacoes():
@@ -591,5 +653,150 @@ ctk.CTkButton(scroll_frame , text="Registrar Locação", width=200, command=clic
 ctk.CTkButton(scroll_frame , text="Voltar", width=200, fg_color="#444", command=lambda: mostrar_frame(frame_gerenciar_locacoes)).pack(pady=20)
 def registrar_locacao():
     mostrar_frame(frame_registrar_locacao)
+
+
+def registrar_devolucao(cpf):
+    linhas_novas = []
+    try:
+        with open("locacao.txt", "r", encoding="utf-8") as arq:
+            for linha in arq:
+                dados = linha.strip().split(";")
+                if len(dados) < 9:
+                    linhas_novas.append(linha) 
+                    continue
+                nome, cpf_reg, tel, email, end, placa, retirada, prevista, status = dados
+                
+                if cpf == cpf_reg and status == "ATIVA":
+                    nova_linha = f"{nome};{cpf_reg};{tel};{email};{end};{placa};{retirada};{prevista};DEVOLVIDA\n"
+                    linhas_novas.append(nova_linha)
+                else:
+                    linhas_novas.append(linha)
+        
+        with open("locacao.txt", "w", encoding="utf-8") as arq:
+            arq.writelines(linhas_novas)
+        return True
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao atualizar registro: {e}")
+        return False
+
+
+
+
+def montar_frame_devolucao():
+    
+    for widget in frame_devolucao_locacao.winfo_children():
+        widget.destroy()
+
+    
+    ctk.CTkLabel(
+        frame_devolucao_locacao,
+        text="Devolução de Veículo",
+        font=("Arial", 22, "bold")
+    ).pack(pady=20)
+
+    
+    ctk.CTkLabel(
+        frame_devolucao_locacao,
+        text="Digite o CPF do Cliente:"
+    ).pack()
+
+    entrada_cpf_dev = ctk.CTkEntry(frame_devolucao_locacao, width=250)
+    entrada_cpf_dev.pack(pady=10)
+
+    label_erro_dev = ctk.CTkLabel(frame_devolucao_locacao, text="", text_color="red")
+    label_erro_dev.pack(pady=5)
+
+    label_info = ctk.CTkLabel(frame_devolucao_locacao, text="", justify="left")
+    label_info.pack(pady=10)
+
+    
+    
+    label_info = ctk.CTkLabel(
+        frame_devolucao_locacao,
+        text="",
+        justify="left",
+        font=("Arial", 14)
+    )
+    label_info.pack(pady=10)
+
+    
+    valor_total = ctk.StringVar(value="0.00")
+    dias_atraso = ctk.StringVar(value="0")
+
+    
+    def buscar_devolucao():
+        cpf = entrada_cpf_dev.get().strip()
+    
+    
+        label_erro_dev.configure(text="")
+        label_info.configure(text="")
+
+        if not cpf:
+            label_erro_dev.configure(text="Digite um CPF.")
+            return
+
+        dados = buscar_locacao_por_cpf(cpf)
+
+        if dados is None:
+            label_erro_dev.configure(text="Nenhuma locação ativa encontrada.")
+            return
+
+    
+        hoje = datetime.now().date()
+        retirada = datetime.strptime(dados["retirada"], "%d/%m/%Y").date()
+        prevista = datetime.strptime(dados["prevista"], "%d/%m/%Y").date()
+
+    
+        atraso = (hoje - prevista).days
+        atraso = atraso if atraso > 0 else 0
+        dias_atraso.set(str(atraso))
+
+        total = atraso * 20
+        valor_total.set(f"{total:.2f}")
+
+    
+        texto = (
+            f"Cliente: {dados['nome']}\n"
+            f"Veículo: {dados['marca']}/{dados['modelo']}/{dados['ano']}/{dados['placa']}\n"
+            f"Retirada: {dados['retirada']}\n"
+            f"Devolução prevista: {dados['prevista']}\n\n"
+            f"Resumo:\n"
+            f"Dias de atraso: {dias_atraso.get()}\n"
+            f"Total: R$ {valor_total.get()}"
+        )
+
+
+        label_info.configure(text=texto)
+
+
+    ctk.CTkButton(frame_devolucao_locacao, text="Buscar", command=buscar_devolucao).pack(pady=10)
+
+    
+    def confirmar_devolucao():
+        cpf = entrada_cpf_dev.get().strip()
+        registrar_devolucao(cpf)
+        messagebox.showinfo("Sucesso", "Devolução registrada!")
+        entrada_cpf_dev.delete(0, "end")
+        label_info.configure(text="")
+
+    ctk.CTkButton(frame_devolucao_locacao, text="Confirmar", fg_color="green",
+                  command=confirmar_devolucao).pack(pady=10)
+
+    
+    def cancelar_devolucao():
+        entrada_cpf_dev.delete(0, "end")
+        label_info.configure(text="")
+
+    ctk.CTkButton(frame_devolucao_locacao, text="Cancelar", fg_color="red",
+                  command=cancelar_devolucao).pack(pady=10)
+
+    
+    ctk.CTkButton(
+        frame_devolucao_locacao,
+        text="Voltar",
+        command=lambda: mostrar_frame(frame_gerenciar_locacoes)
+    ).pack(pady=20)
+
+
 
 sistema.mainloop()
